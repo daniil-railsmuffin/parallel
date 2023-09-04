@@ -405,7 +405,6 @@ module Parallel
     def work_in_threads(job_factory, options, &block)
       raise "interrupt_signal is no longer supported for threads" if options[:interrupt_signal]
       results = []
-      results_mutex = Mutex.new # arrays are not thread-safe on jRuby
       exception = nil
 
       in_threads(options) do |worker_num|
@@ -417,7 +416,7 @@ module Parallel
             result = with_instrumentation item, index, options do
               call_with_index(item, index, options, &block)
             end
-            results_mutex.synchronize { results[index] = result }
+            results[index] = result
           rescue StandardError
             exception = $!
           end
